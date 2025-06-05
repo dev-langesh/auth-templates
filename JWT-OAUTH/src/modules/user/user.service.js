@@ -9,10 +9,16 @@ async function createUser(data) {
   return await User.create(data);
 }
 
-async function findUserByEmail(email,includePassword = false) {
-  const user = await User.findOne({ email }).select((includePassword ? "+" : "-") + "password");
+async function findUserByEmail(
+  email,
+  includePassword = false,
+  throwIfNotFound = true
+) {
+  const user = await User.findOne({ email }).select(
+    (includePassword ? "+" : "-") + "password"
+  );
 
-  if (!user) {
+  if (!user && throwIfNotFound) {
     throw new Error("User not found with this email");
   }
 

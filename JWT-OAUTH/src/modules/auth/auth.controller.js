@@ -48,6 +48,22 @@ async function rotateTokens(req, res) {
   }
 }
 
+async function loginUserWithGoogle(req, res) {
+  const { idToken } = req.body;
+
+  try {
+    const sres = await authService.loginWithGoogle(idToken);
+
+    res.cookie("accessToken", sres.tokens.accessToken, cookieOptions);
+    res.cookie("refreshToken", sres.tokens.refreshToken, cookieOptions);
+
+    res.status(200).json({ message: "User logged in successfully", user: sres.user });
+  } catch (error) {
+    console.error(error);
+    res.status(401).json({ message: error.message || "Login failed" });
+  }
+}
+
 async function logoutUser(req, res) {
   res.clearCookie("accessToken", cookieOptions);
   res.clearCookie("refreshToken", cookieOptions);
@@ -60,6 +76,7 @@ const authController = {
   authStatus: asyncHandler(authStatus),
   rotateTokens: asyncHandler(rotateTokens),
   logoutUser: asyncHandler(logoutUser),
+  loginUserWithGoogle: asyncHandler(loginUserWithGoogle),
 };
 
 module.exports = { authController };

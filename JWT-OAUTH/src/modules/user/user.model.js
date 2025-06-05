@@ -17,8 +17,9 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
-      minlength: 6,
+      trim: true,
+      minlength: 8,
+      default: null, // Default to null for Google users
     },
     provider: {
       type: String,
@@ -29,7 +30,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       unique: true,
       sparse: true, // Allows for null values without index conflicts
-        },
+    },
+    picture: {
+      type: String,
+      trim: true,
+    },
     role: {
       type: String,
       enum: Object.values(roles),
