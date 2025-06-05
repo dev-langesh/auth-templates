@@ -16,8 +16,12 @@ async function validateToken(req, res, next) {
     req.user = user;
     next();
   } catch (error) {
-    console.log(error);
-    return res.status(401).json({ message: "Unauthorized" });
+    console.log(error)
+    
+    return res.status(error.statusCode).json({
+      message: error.message,
+      errorCode: error.errorCode,
+    });
   }
 }
 

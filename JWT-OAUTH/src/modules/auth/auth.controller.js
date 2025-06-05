@@ -33,35 +33,23 @@ async function authStatus(req, res) {
 async function rotateTokens(req, res) {
   const { refreshToken } = req.cookies;
 
-  try {
-    const tokens = await authService.rotateTokens(refreshToken);
-    res.cookie("accessToken", tokens.accessToken, cookieOptions);
-    res.cookie("refreshToken", tokens.refreshToken, cookieOptions);
-    res.status(200).json({});
-  } catch (error) {
-    console.log(error.errorCode);
-    res.clearCookie("accessToken", cookieOptions);
-    res.clearCookie("refreshToken", cookieOptions);
-    return res.status(401).json({
-      message: error.message || "Session expired, please login again",
-    });
-  }
+  const tokens = await authService.rotateTokens(refreshToken);
+  res.cookie("accessToken", tokens.accessToken, cookieOptions);
+  res.cookie("refreshToken", tokens.refreshToken, cookieOptions);
+  res.status(200).json({ message: "Tokens rotated successfully" });
 }
 
 async function loginUserWithGoogle(req, res) {
   const { idToken } = req.body;
 
-  try {
-    const sres = await authService.loginWithGoogle(idToken);
+  const sres = await authService.loginWithGoogle(idToken);
 
-    res.cookie("accessToken", sres.tokens.accessToken, cookieOptions);
-    res.cookie("refreshToken", sres.tokens.refreshToken, cookieOptions);
+  res.cookie("accessToken", sres.tokens.accessToken, cookieOptions);
+  res.cookie("refreshToken", sres.tokens.refreshToken, cookieOptions);
 
-    res.status(200).json({ message: "User logged in successfully", user: sres.user });
-  } catch (error) {
-    console.error(error);
-    res.status(401).json({ message: error.message || "Login failed" });
-  }
+  res
+    .status(200)
+    .json({ message: "User logged in successfully", user: sres.user });
 }
 
 async function logoutUser(req, res) {

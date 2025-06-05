@@ -1,5 +1,7 @@
 const { env } = require("../../config/env");
+const { AuthErrors } = require("../../errors/authErrors");
 const { tokenService } = require("../../lib/jwt/token.service");
+const { AppError } = require("../../utils/error");
 const { userService } = require("../user/user.service");
 const bcrypt = require("bcrypt");
 const { OAuth2Client } = require("google-auth-library");
@@ -21,7 +23,7 @@ async function loginUser(data) {
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
-    throw new Error("Invalid email or password");
+    throw new AppError(AuthErrors.INVALID_CREDENTIALS);
   }
 
   const tokens = tokenService.generateTokens(user);
@@ -31,7 +33,7 @@ async function loginUser(data) {
 
 async function rotateTokens(refreshToken) {
   if (!refreshToken) {
-    throw new Error("Session expired, please login again");
+    throw new AppError(AuthErrors.MISSING_TOKEN);
   }
 
   try {
@@ -42,7 +44,7 @@ async function rotateTokens(refreshToken) {
 
     return tokens;
   } catch (error) {
-    throw new Error("Session expired, please login again");
+    throw new AppError(AuthErrors.REFRESH_TOKEN_EXPIRED);
   }
 }
 
@@ -60,13 +62,13 @@ async function verifyIdToken(idToken) {
     const { sub: googleId, email, name, picture, email_verified } = payload;
 
     if (!email_verified) {
-      throw new Error("Email not verified by Google");
+      throw new AppError(AuthErrors.GOOGLE_EMAIL_NOT_VERIFIED);
     }
 
     return { googleId, email, name, picture };
   } catch (err) {
     console.error("Failed to verify Google ID token:", err.message);
-    throw new Error("Failed to verify Google ID token");
+    throw new AppError(AuthErrors.GOOGLE_ID_TOKEN_VERIFICATION_FAILED);
   }
 }
 

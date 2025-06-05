@@ -1,5 +1,7 @@
 const jwt = require("jsonwebtoken");
 const { env } = require("../../config/env");
+const { AppError } = require("../../utils/error");
+const { AuthErrors } = require("../../errors/authErrors");
 
 function generateToken({ userId, role, tokenType }) {
   const payload = { userId, role, tokenType };
@@ -36,7 +38,15 @@ function verifyToken(token, tokenType) {
   try {
     return jwt.verify(token, secret);
   } catch (error) {
-    throw new Error("Invalid token");
+    if (error.name === "TokenExpiredError") {
+      throw new AppError(
+        tokenType === "access"
+          ? AuthErrors.ACCESS_TOKEN_EXPIRED
+          : AuthErrors.REFRESH_TOKEN_EXPIRED
+      );
+    } else {
+      throw new AppError(AuthErrors.INVALID_TOKEN);
+    }
   }
 }
 

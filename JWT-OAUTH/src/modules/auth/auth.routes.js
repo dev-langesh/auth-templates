@@ -1,7 +1,7 @@
 const { validateInput } = require("../../middleware/validateInput.middleware");
 const { validateToken } = require("../../middleware/validateToken.middleware");
 const { authController } = require("./auth.controller");
-const { registerSchema, loginSchema } = require("./auth.schema");
+const { registerSchema, loginSchema } = require("./auth.inputSchema");
 
 const router = require("express").Router();
 

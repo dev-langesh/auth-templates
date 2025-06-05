@@ -9,8 +9,6 @@ const corsOptions = {
     }
   },
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  allowedHeaders: "Content-Type, Authorization",
-  exposedHeaders: "Content-Type, Authorization",
   credentials: true,
   optionsSuccessStatus: 204, // For legacy browser support
 };
