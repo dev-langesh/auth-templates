@@ -1,5 +1,6 @@
 "use client";
 
+import { api } from "@/api/axios";
 import { useEffect } from "react";
 
 function Login() {
@@ -28,20 +29,13 @@ function Login() {
   }, []);
 
   const handleCredentialResponse = async (response) => {
-    const token = response.credential;
+    const idToken = response.credential;
 
-    console.log(token);
+    console.log(idToken);
 
-    // Send token to backend for verification
-    // const res = await fetch("http://localhost:5000/api/auth/google", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({ token }),
-    // });
+    const res = await api.post("/auth/login/google", { idToken });
 
-    // const data = await res.json();
-    // console.log(data);
-    // Save JWT / session here
+    console.log(res);
   };
 
   return <div id="googleBtn"></div>;
