@@ -16,7 +16,7 @@ async function registerUser(data) {
 
   await otpService.sendOTP({
     notificationType: "email",
-    id: user.email,
+    to: user.email,
   });
 
   return { user };
@@ -26,9 +26,18 @@ async function loginUser(data) {
   const { email, password } = data;
   const user = await userService.findUserByEmail(email, true);
 
+  if (!user.password && user.provider === "google") {
+    throw new AppError(AuthErrors.GOOGLE_LOGIN_REQUIRED);
+  }
+
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
     throw new AppError(AuthErrors.INVALID_CREDENTIALS);
+  }
+
+  if (!user.verified) {
+    await otpService.sendOTP({ notificationType: "email", to: user.email });
+    throw new AppError(AuthErrors.USER_NOT_VERIFIED);
   }
 
   const tokens = tokenService.generateTokens(user);
@@ -39,7 +48,7 @@ async function loginUser(data) {
 async function verifyOtp({ to, otp }) {
   await otpService.verifyOtp({ to, otp });
 
-  const user = await userService.findUserByEmail(to);
+  const user = await userService.verifyUserByEmail(to);
 
   const tokens = tokenService.generateTokens(user);
 
@@ -92,6 +101,12 @@ async function loginWithGoogle(idToken) {
 
   let user = await userService.findUserByEmail(email, false, false);
 
+  if (!user?.verified) {
+    await otpService.sendOTP({ notificationType: "email", to: user.email });
+    throw new AppError(AuthErrors.USER_NOT_VERIFIED);
+  }
+
+  // If user does not exist, create a new one
   if (!user) {
     user = await userService.createUser({
       googleId,
@@ -99,6 +114,11 @@ async function loginWithGoogle(idToken) {
       name,
       picture,
       provider: "google",
+    });
+
+    await otpService.sendOTP({
+      notificationType: "email",
+      to: user.email,
     });
   }
 

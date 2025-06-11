@@ -1,4 +1,9 @@
 const AuthErrors = {
+  USER_NOT_VERIFIED: {
+    errorCode: 1006,
+    message: "User not verified. Please verify your email.",
+    statusCode: 403,
+  },
   INVALID_CREDENTIALS: {
     errorCode: 1007,
     message: "Sign In failed. Check your credentials.",
@@ -22,6 +27,11 @@ const AuthErrors = {
   GOOGLE_EMAIL_NOT_VERIFIED: {
     errorCode: 1011,
     message: "Google email not verified. Please use a verified email.",
+    statusCode: 401,
+  },
+  GOOGLE_LOGIN_REQUIRED: {
+    errorCode: 1012,
+    message: "Google login required. Please log in with Google.",
     statusCode: 401,
   },
 

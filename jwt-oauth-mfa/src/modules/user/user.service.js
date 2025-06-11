@@ -36,10 +36,18 @@ async function findUserById(id) {
   return user;
 }
 
+async function verifyUserByEmail(email) {
+  const user = await findUserByEmail(email);
+
+  user.verified = true;
+  return await user.save();
+}
+
 const userService = {
   createUser,
   findUserByEmail,
   findUserById,
+  verifyUserByEmail,
 };
 
 module.exports = { userService };
