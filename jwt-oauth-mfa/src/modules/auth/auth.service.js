@@ -5,6 +5,7 @@ const { AppError } = require("../../utils/error");
 const { userService } = require("../user/user.service");
 const bcrypt = require("bcrypt");
 const { OAuth2Client } = require("google-auth-library");
+const { otpService } = require("../otp/otp.service");
 
 async function registerUser(data) {
   const payload = { ...data };
@@ -12,9 +13,13 @@ async function registerUser(data) {
   payload.password = await bcrypt.hash(payload.password, 10);
 
   const user = await userService.createUser(payload);
-  const tokens = tokenService.generateTokens(user);
 
-  return { user, tokens };
+  await otpService.sendOTP({
+    notificationType: "email",
+    id: user.email,
+  });
+
+  return { user };
 }
 
 async function loginUser(data) {
@@ -25,6 +30,16 @@ async function loginUser(data) {
   if (!isPasswordValid) {
     throw new AppError(AuthErrors.INVALID_CREDENTIALS);
   }
+
+  const tokens = tokenService.generateTokens(user);
+
+  return { user, tokens };
+}
+
+async function verifyOtp({ to, otp }) {
+  await otpService.verifyOtp({ to, otp });
+
+  const user = await userService.findUserByEmail(to);
 
   const tokens = tokenService.generateTokens(user);
 
@@ -95,6 +110,7 @@ async function loginWithGoogle(idToken) {
 const authService = {
   registerUser,
   loginUser,
+  verifyOtp,
   rotateTokens,
   verifyIdToken,
   loginWithGoogle,

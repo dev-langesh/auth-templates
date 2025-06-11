@@ -10,6 +10,10 @@ const envSchema = z.object({
   ACCESS_TOKEN_EXPIRY: z.string().default("15m"),
   REFRESH_TOKEN_EXPIRY: z.string().default("7d"),
   GOOGLE_CLIENT_ID: z.string().min(10).max(100).optional(),
+  SMTP_HOST: z.string().min(3).max(50),
+  SMTP_PORT: z.string().min(1).max(5),
+  SMTP_USER: z.string().min(3).max(100),
+  SMTP_PASS: z.string().min(3).max(100),
 });
 
 const env = envSchema.safeParse(process.env);
