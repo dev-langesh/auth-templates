@@ -4,7 +4,7 @@ const fs = require("fs/promises");
 const Handlebars = require("handlebars");
 const path = require("path");
 const { AppError } = require("../../../utils/error");
-const { AuthErrors } = require("../../../errors/authErrors");
+const { NotificationErrors } = require("../../../errors/notificationErrors");
 
 // Create a transporter object using SMTP
 const transporter = nodemailer.createTransport({
@@ -30,7 +30,7 @@ async function sendEmail({ to, subject, text }) {
     await transporter.sendMail(mailOptions);
   } catch (error) {
     console.log(error);
-    throw new AppError(AuthErrors.EMAIL_SEND_FAILED);
+    throw new AppError(NotificationErrors.EMAIL_SEND_FAILED);
   }
 }
 
@@ -48,14 +48,14 @@ async function sendEmailWithHtml({ to, subject, templateName, data }) {
     await transporter.sendMail(mailOptions);
   } catch (error) {
     console.log(error);
-    throw new AppError(AuthErrors.EMAIL_SEND_FAILED);
+    throw new AppError(NotificationErrors.EMAIL_SEND_FAILED);
   }
 }
 
 async function loadTemplate(templateName, data) {
   if (!templateName) {
     console.log("Template name is required");
-    throw new AppError(AuthErrors.EMAIL_SEND_FAILED);
+    throw new AppError(NotificationErrors.EMAIL_SEND_FAILED);
   }
 
   const templatePath = path.join(
@@ -69,7 +69,7 @@ async function loadTemplate(templateName, data) {
     templateSource = await fs.readFile(templatePath, "utf-8");
   } catch (err) {
     console.error(`Failed to load template ${templateName}:`, err.message);
-    throw new AppError(AuthErrors.EMAIL_SEND_FAILED);
+    throw new AppError(NotificationErrors.EMAIL_SEND_FAILED);
   }
 
   const template = Handlebars.compile(templateSource);
