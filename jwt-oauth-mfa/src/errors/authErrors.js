@@ -46,11 +46,6 @@ const AuthErrors = {
     message: "Invalid OTP provided.",
     statusCode: 400,
   },
-  OTP_NOT_FOUND: {
-    errorCode: 1104,
-    message: "No OTP found. Please request one first.",
-    statusCode: 404,
-  },
 
   //  Token Errors
   REFRESH_TOKEN_EXPIRED: {
@@ -72,13 +67,6 @@ const AuthErrors = {
     errorCode: 2003,
     message: "Invalid token. Please log in again.",
     statusCode: 401,
-  },
-
-  // Notification Errors
-  EMAIL_SEND_FAILED: {
-    errorCode: 3000,
-    message: "Failed to send email. Please try again later.",
-    statusCode: 500,
   },
 };
 
