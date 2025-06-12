@@ -78,6 +78,11 @@ const AuthErrors = {
     message: "Invalid token. Please log in again.",
     statusCode: 401,
   },
+  INVALID_TOKEN_TYPE: {
+    errorCode: 2004,
+    message: "Invalid token type. Please provide a valid token type.",
+    statusCode: 400,
+  },
 };
 
 module.exports = { AuthErrors };

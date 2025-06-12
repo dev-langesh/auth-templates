@@ -19,35 +19,52 @@ async function loginUser(req, res) {
   res.cookie("accessToken", sres.tokens.accessToken, cookieOptions);
   res.cookie("refreshToken", sres.tokens.refreshToken, cookieOptions);
 
-  res
-    .status(200)
-    .json({ message: "User logged in successfully", user: sres.user });
+  res.json({ message: "User logged in successfully", user: sres.user });
 }
 
 async function sendOtp(req, res) {
-  const { notificationType, to } = req.body;
+  const { notificationType, to, template } = req.body;
 
   await otpService.sendOTP({
     notificationType,
     to: to,
+    template,
   });
 
-  res.status(200).json({ message: "OTP sent successfully" });
+  res.json({ message: "OTP sent successfully" });
+}
+
+async function verifyOtpToResetPassword(req, res) {
+  const { otp, to } = req.body;
+
+  const sRes = await authService.verifyOtpToResetPassword({ to, otp });
+
+  res.json({
+    message: "OTP verified successfully",
+    token: sRes.token,
+  });
+}
+
+async function resetPassword(req, res) {
+  const { token, password } = req.body;
+
+  await authService.verifyTokenAndResetPassword({ token, password });
+  res.json({ message: "Password reset successfully" });
 }
 
 async function verifyOtp(req, res) {
-  const { otp ,to} = req.body;
+  const { otp, to } = req.body;
 
   const sRes = await authService.verifyOtp({ to, otp });
 
   res.cookie("accessToken", sRes.tokens.accessToken, cookieOptions);
   res.cookie("refreshToken", sRes.tokens.refreshToken, cookieOptions);
 
-  res.status(200).json({ message: "OTP verified successfully" });
+  res.json({ message: "OTP verified successfully" });
 }
 
 async function authStatus(req, res) {
-  res.status(200).json({ user: req.user });
+  res.json({ user: req.user });
 }
 
 async function rotateTokens(req, res) {
@@ -56,7 +73,7 @@ async function rotateTokens(req, res) {
   const tokens = await authService.rotateTokens(refreshToken);
   res.cookie("accessToken", tokens.accessToken, cookieOptions);
   res.cookie("refreshToken", tokens.refreshToken, cookieOptions);
-  res.status(200).json({ message: "Tokens rotated successfully" });
+  res.json({ message: "Tokens rotated successfully" });
 }
 
 async function loginUserWithGoogle(req, res) {
@@ -67,15 +84,13 @@ async function loginUserWithGoogle(req, res) {
   res.cookie("accessToken", sres.tokens.accessToken, cookieOptions);
   res.cookie("refreshToken", sres.tokens.refreshToken, cookieOptions);
 
-  res
-    .status(200)
-    .json({ message: "User logged in successfully", user: sres.user });
+  res.json({ message: "User logged in successfully", user: sres.user });
 }
 
 async function logoutUser(req, res) {
   res.clearCookie("accessToken", cookieOptions);
   res.clearCookie("refreshToken", cookieOptions);
-  res.status(200).json({ message: "User logged out successfully" });
+  res.json({ message: "User logged out successfully" });
 }
 
 const authController = {
@@ -87,6 +102,8 @@ const authController = {
   rotateTokens: asyncHandler(rotateTokens),
   logoutUser: asyncHandler(logoutUser),
   loginUserWithGoogle: asyncHandler(loginUserWithGoogle),
+  verifyOtpToResetPassword: asyncHandler(verifyOtpToResetPassword),
+  resetPassword: asyncHandler(resetPassword),
 };
 
 module.exports = { authController };

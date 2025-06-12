@@ -3,18 +3,33 @@ const { env } = require("../../config/env");
 const { AppError } = require("../../utils/error");
 const { AuthErrors } = require("../../errors/authErrors");
 
+function getTokenOptions(tokenType) {
+  const options = { secret: "", expiresIn: "" };
+  switch (tokenType) {
+    case "access":
+      options.secret = env.ACCESS_TOKEN_SECRET;
+      options.expiresIn = env.ACCESS_TOKEN_EXPIRY;
+      break;
+    case "refresh":
+      options.secret = env.REFRESH_TOKEN_SECRET;
+      options.expiresIn = env.REFRESH_TOKEN_EXPIRY;
+      break;
+    case "reset-password":
+      options.secret = env.RESET_PASSWORD_TOKEN_SECRET;
+      options.expiresIn = env.RESET_PASSWORD_TOKEN_EXPIRY;
+      break;
+    default:
+      throw new AppError(AuthErrors.INVALID_TOKEN_TYPE);
+  }
+
+  return options;
+}
+
 function generateToken({ userId, role, tokenType }) {
   const payload = { userId, role, tokenType };
-  const secret =
-    tokenType === "access" ? env.ACCESS_TOKEN_SECRET : env.REFRESH_TOKEN_SECRET;
-  const options = {
-    expiresIn:
-      tokenType === "access"
-        ? env.ACCESS_TOKEN_EXPIRY
-        : env.REFRESH_TOKEN_EXPIRY,
-  };
+  let { secret, expiresIn } = getTokenOptions(tokenType);
 
-  return jwt.sign(payload, secret, options);
+  return jwt.sign(payload, secret, { expiresIn });
 }
 
 function generateTokens(user) {
@@ -33,8 +48,7 @@ function generateTokens(user) {
 }
 
 function verifyToken(token, tokenType) {
-  const secret =
-    tokenType === "access" ? env.ACCESS_TOKEN_SECRET : env.REFRESH_TOKEN_SECRET;
+  const { secret } = getTokenOptions(tokenType);
   try {
     return jwt.verify(token, secret);
   } catch (error) {
@@ -45,6 +59,7 @@ function verifyToken(token, tokenType) {
           : AuthErrors.REFRESH_TOKEN_EXPIRED
       );
     } else {
+      console.log(error);
       throw new AppError(AuthErrors.INVALID_TOKEN);
     }
   }

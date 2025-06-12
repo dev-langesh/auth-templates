@@ -34,9 +34,9 @@ async function sendEmail({ to, subject, text }) {
   }
 }
 
-async function sendEmailWithHtml({ to, subject, templateName, data }) {
+async function sendEmailWithHtml({ to, subject, template, data }) {
   try {
-    const html = await loadTemplate(templateName, data);
+    const html = await loadTemplate(template, data);
 
     const mailOptions = {
       from: env.SMTP_USER,

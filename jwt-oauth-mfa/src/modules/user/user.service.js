@@ -43,11 +43,19 @@ async function verifyUserByEmail(email) {
   return await user.save();
 }
 
+async function resetPassword(userId, password) {
+  const user = await findUserById(userId);
+
+  user.password = password;
+  return await user.save();
+}
+
 const userService = {
   createUser,
   findUserByEmail,
   findUserById,
   verifyUserByEmail,
+  resetPassword,
 };
 
 module.exports = { userService };

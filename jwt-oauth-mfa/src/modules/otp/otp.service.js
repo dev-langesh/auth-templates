@@ -12,11 +12,11 @@ async function createOtp({ to, otp, notificationType }) {
   return await Otp.create({ to, otp, expiresAt, notificationType });
 }
 
-async function sendEmail(to, otp) {
+async function sendEmail(to, otp, template) {
   await emailService.sendEmailWithHtml({
     to,
     subject: "Your OTP Code",
-    templateName: "auth/otp",
+    template,
     data: {
       otp,
       email: to,
@@ -24,7 +24,7 @@ async function sendEmail(to, otp) {
   });
 }
 
-async function sendOTP({ notificationType, to }) {
+async function sendOTP({ notificationType, to, template }) {
   const otpRecord = await Otp.findOne({ to });
   const now = Date.now();
 
@@ -33,7 +33,7 @@ async function sendOTP({ notificationType, to }) {
   if (otpRecord) {
     if (now - otpRecord.lastAttempt > config.otp.attemptsExpiry) {
       otpRecord.attempts = 0;
-      otpRecord.lastAttempt = now;
+      otpRecord.lastAttempt = new Date(now + config.otp.attemptsExpiry);
       await otpRecord.save();
     }
     if (otpRecord.attempts >= config.otp.maxAttempts) {
@@ -53,7 +53,7 @@ async function sendOTP({ notificationType, to }) {
     await otpRecord.save();
 
     if (notificationType === "email") {
-      await sendEmail(to, otp);
+      await sendEmail(to, otp, template);
     }
   } else {
     const otp = generateOtp();
@@ -61,7 +61,7 @@ async function sendOTP({ notificationType, to }) {
     await createOtp({ to, otp: hashedOtp, notificationType });
 
     if (notificationType === "email") {
-      await sendEmail(to, otp);
+      await sendEmail(to, otp, template);
     }
   }
 }
@@ -83,8 +83,7 @@ async function verifyOtp({ to, otp }) {
     throw new AppError(AuthErrors.OTP_INVALID);
   }
 
-  await Otp.deleteOne({ to });
-  return true;
+  // await Otp.deleteOne({ to });
 }
 
 const otpService = {

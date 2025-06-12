@@ -6,6 +6,7 @@ const { userService } = require("../user/user.service");
 const bcrypt = require("bcrypt");
 const { OAuth2Client } = require("google-auth-library");
 const { otpService } = require("../otp/otp.service");
+const { generateHash } = require("../../utils/auth/hash");
 
 async function registerUser(data) {
   const payload = { ...data };
@@ -17,6 +18,7 @@ async function registerUser(data) {
   await otpService.sendOTP({
     notificationType: "email",
     to: user.email,
+    templateName: "auth/otp",
   });
 
   return { user };
@@ -36,7 +38,6 @@ async function loginUser(data) {
   }
 
   if (!user.verified) {
-    await otpService.sendOTP({ notificationType: "email", to: user.email });
     throw new AppError(AuthErrors.USER_NOT_VERIFIED);
   }
 
@@ -102,7 +103,11 @@ async function loginWithGoogle(idToken) {
   let user = await userService.findUserByEmail(email, false, false);
 
   if (!user?.verified) {
-    await otpService.sendOTP({ notificationType: "email", to: user.email });
+    await otpService.sendOTP({
+      notificationType: "email",
+      to: user.email,
+      templateName: "auth/otp",
+    });
     throw new AppError(AuthErrors.USER_NOT_VERIFIED);
   }
 
@@ -119,12 +124,34 @@ async function loginWithGoogle(idToken) {
     await otpService.sendOTP({
       notificationType: "email",
       to: user.email,
+      templateName: "auth/otp",
     });
   }
 
   const tokens = tokenService.generateTokens(user);
 
   return { user, tokens };
+}
+
+async function verifyOtpToResetPassword({ otp, to }) {
+  await otpService.verifyOtp({ to, otp });
+
+  const user = await userService.findUserByEmail(to);
+
+  const token = tokenService.generateToken({
+    userId: user._id,
+    tokenType: "reset-password",
+    role: user.role,
+  });
+
+  return { token };
+}
+
+async function verifyTokenAndResetPassword({ password, token }) {
+  const decoded = tokenService.verifyToken(token, "reset-password");
+
+  const hashedPassword = await generateHash(password);
+  await userService.resetPassword(decoded.userId, hashedPassword);
 }
 
 const authService = {
@@ -134,6 +161,8 @@ const authService = {
   rotateTokens,
   verifyIdToken,
   loginWithGoogle,
+  verifyOtpToResetPassword,
+  verifyTokenAndResetPassword,
 };
 
 module.exports = { authService };
