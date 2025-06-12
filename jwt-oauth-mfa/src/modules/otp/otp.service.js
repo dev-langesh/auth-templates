@@ -83,7 +83,7 @@ async function verifyOtp({ to, otp }) {
     throw new AppError(AuthErrors.OTP_INVALID);
   }
 
-  // await Otp.deleteOne({ to });
+  await Otp.deleteOne({ to });
 }
 
 const otpService = {
