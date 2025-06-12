@@ -56,7 +56,9 @@ function verifyToken(token, tokenType) {
       throw new AppError(
         tokenType === "access"
           ? AuthErrors.ACCESS_TOKEN_EXPIRED
-          : AuthErrors.REFRESH_TOKEN_EXPIRED
+          : tokenType === "refresh"
+          ? AuthErrors.REFRESH_TOKEN_EXPIRED
+          : AuthErrors.TOKEN_EXPIRED
       );
     } else {
       console.log(error);

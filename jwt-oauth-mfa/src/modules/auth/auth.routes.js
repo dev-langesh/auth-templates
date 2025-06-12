@@ -1,24 +1,50 @@
 const { validateInput } = require("../../middleware/validateInput.middleware");
 const { validateToken } = require("../../middleware/validateToken.middleware");
 const { authController } = require("./auth.controller");
-const { registerSchema, loginSchema } = require("./auth.inputSchema");
+const { authInputSchema } = require("./auth.inputSchema");
 
 const router = require("express").Router();
 
+router.get("/status", validateToken, authController.authStatus);
+
 router.post(
   "/register",
-  validateInput(registerSchema),
+  validateInput(authInputSchema.registerSchema),
   authController.registerUser
 );
-router.post("/login", validateInput(loginSchema), authController.loginUser);
-router.post("/login/google", authController.loginUserWithGoogle);
-router.get("/status", validateToken, authController.authStatus);
+router.post(
+  "/login",
+  validateInput(authInputSchema.loginSchema),
+  authController.loginUser
+);
+router.post(
+  "/login/google",
+  validateInput(authInputSchema.googleLoginSchema),
+  authController.loginUserWithGoogle
+);
 router.post("/rotate-tokens", authController.rotateTokens);
-router.post("/reset-password", authController.resetPassword);
-router.post("/logout", authController.logoutUser);
+router.post(
+  "/reset-password",
+  validateInput(authInputSchema.resetPasswordSchema),
+  authController.resetPassword
+);
 
-router.post("/send-otp", authController.sendOtp);
-router.post("/verify-otp", authController.verifyOtp);
-router.post("/verify-otp-reset-password", authController.verifyOtpToResetPassword);
+router.post(
+  "/send-otp",
+  validateInput(authInputSchema.sendOtpSchema),
+  authController.sendOtp
+);
+router.post(
+  "/verify-otp",
+  validateInput(authInputSchema.verifyOtpSchema),
+  authController.verifyOtp
+);
+router.post(
+  "/verify-otp-reset-password",
+  validateInput(authInputSchema.verifyOtpToResetPasswordSchema),
+  authController.verifyOtpToResetPassword
+);
+
+router.post("/logout", authController.logoutUser);
 
 module.exports = { authRouter: router };

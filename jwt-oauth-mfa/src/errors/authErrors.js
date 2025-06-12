@@ -83,6 +83,11 @@ const AuthErrors = {
     message: "Invalid token type. Please provide a valid token type.",
     statusCode: 400,
   },
+  TOKEN_EXPIRED: {
+    errorCode: 2005,
+    message: "Token has expired",
+    statusCode: 401,
+  },
 };
 
 module.exports = { AuthErrors };
