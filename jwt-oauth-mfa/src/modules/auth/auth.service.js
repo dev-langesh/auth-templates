@@ -15,11 +15,11 @@ async function registerUser(data) {
 
   const user = await userService.createUser(payload);
 
-  await otpService.sendOTP({
-    notificationType: "email",
-    to: user.email,
-    templateName: "auth/otp",
-  });
+  // await otpService.sendOTP({
+  //   notificationType: "email",
+  //   to: user.email,
+  //   templateName: "auth/otp",
+  // });
 
   return { user };
 }
